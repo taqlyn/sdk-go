@@ -18,7 +18,7 @@ go get github.com/taqlyn/sdk-go
 Use the same environment variables as the Node server SDK:
 
 ```bash
-export TAQLYN_BASE_URL=http://localhost:8080
+export TAQLYN_BASE_URL=https://api.rutvik.qzz.io
 export TAQLYN_CLIENT_ID=app_test_abc
 export TAQLYN_PRIVATE_KEY='-----BEGIN PRIVATE KEY-----
 ...
@@ -61,6 +61,9 @@ func main() {
 `TAQLYN_PRIVATE_KEY` must be a PKCS#8 Ed25519 PEM, not an `sk_*` handle.
 Literal `\n` sequences in the environment value are accepted. Never commit the
 private key.
+
+Public tunnel demo: see [`examples/server/go`](../../examples/server/go) and
+[`docs/guides/public-demo.md`](../../docs/guides/public-demo.md).
 
 ## API
 
