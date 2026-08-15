@@ -1,5 +1,7 @@
 # Taqlyn Go SDK
 
+**Full guide:** [Go](../../apps/docs/content/server/go.md) on the docs site.
+
 Taqlyn **server** SDK for creating and managing short links. Requests are
 authenticated with an Ed25519 private key and the `X-Taqlyn-*` headers.
 
