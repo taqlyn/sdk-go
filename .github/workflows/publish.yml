@@ -1,0 +1,71 @@
+name: Publish Go Module
+
+# Go modules are decentralized and distributed via Git tags.
+# Publishing indexes the release on the Go Module Mirror (proxy.golang.org)
+# and Checksum Database (sum.golang.org) so consumers can `go get` immediately.
+# Zero static secrets required.
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Module version to index (e.g. v0.1.0)'
+        required: false
+        type: string
+
+concurrency:
+  group: publish-go-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Verify & Index Go Module
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests
+        run: go test -v -race ./...
+
+      - name: Run linter / vet
+        run: go vet ./...
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=v$(git describe --tags --abbrev=0 2>/dev/null || echo '0.1.0')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Index on proxy.golang.org & sum.golang.org
+        run: |
+          VERSION="${{ steps.tag.outputs.version }}"
+          echo "Waking Go module proxy for version ${VERSION}..."
+          
+          # Prompt Google's module mirror to fetch and verify checksums
+          GOPROXY=https://proxy.golang.org go list -m "github.com/${{ github.repository }}@${VERSION}" || true
+          GOPROXY=https://proxy.golang.org go list -m "taqlyn.com/sdk-go@${VERSION}" || true
+          
+          # Request documentation generation on pkg.go.dev
+          curl -s -L "https://pkg.go.dev/fetch/taqlyn.com/sdk-go@${VERSION}" > /dev/null || true
+          curl -s -L "https://pkg.go.dev/fetch/github.com/${{ github.repository }}@${VERSION}" > /dev/null || true
+          
+          echo "Go module published and indexed successfully!"

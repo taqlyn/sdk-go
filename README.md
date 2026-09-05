@@ -101,6 +101,12 @@ The signature is standard base64-encoded Ed25519 and is sent with
 go test ./...
 ```
 
+## CI/CD & Go Module Distribution
+
+Published via `.github/workflows/publish.yml`:
+- **Decentralized Git & Proxy:** Releases trigger automated test suites, linter checks, and prompt Google's Go Module Mirror (`proxy.golang.org`) and checksum transparency database (`sum.golang.org`).
+- **Zero Secrets Required:** Relies entirely on native Git tags (`v*`).
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
