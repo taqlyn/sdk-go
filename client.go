@@ -9,9 +9,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
+
+// DefaultBaseURL is the canonical production Taqlyn API origin.
+const DefaultBaseURL = "https://api.taqlyn.com"
 
 // Config configures a Taqlyn server API client.
 type Config struct {
@@ -33,8 +37,15 @@ type Client struct {
 
 // NewClient creates a signed Taqlyn server API client.
 func NewClient(config Config) (*Client, error) {
-	if config.BaseURL == "" {
-		return nil, fmt.Errorf("taqlyn: BaseURL is required")
+	rawBaseURL := strings.TrimSpace(config.BaseURL)
+	if rawBaseURL == "" {
+		rawBaseURL = strings.TrimSpace(os.Getenv("TAQLYN_BASE_URL"))
+		if rawBaseURL == "" {
+			rawBaseURL = strings.TrimSpace(os.Getenv("TAQLYN_API_URL"))
+		}
+		if rawBaseURL == "" {
+			rawBaseURL = DefaultBaseURL
+		}
 	}
 	if config.ClientID == "" {
 		return nil, fmt.Errorf("taqlyn: ClientID is required")
@@ -43,7 +54,7 @@ func NewClient(config Config) (*Client, error) {
 		return nil, fmt.Errorf("taqlyn: PrivateKeyPEM is required")
 	}
 
-	baseURL, err := url.Parse(config.BaseURL)
+	baseURL, err := url.Parse(rawBaseURL)
 	if err != nil || baseURL.Scheme == "" || baseURL.Host == "" {
 		return nil, fmt.Errorf("taqlyn: BaseURL must be an absolute URL")
 	}

@@ -20,7 +20,9 @@ go get github.com/taqlyn/sdk-go
 Use the same environment variables as the Node server SDK:
 
 ```bash
-export TAQLYN_BASE_URL=https://api.rutvik.qzz.io
+# Optional override: defaults to https://api.taqlyn.com in production
+# export TAQLYN_BASE_URL=https://api.taqlyn.com
+
 export TAQLYN_CLIENT_ID=app_test_abc
 export TAQLYN_PRIVATE_KEY='-----BEGIN PRIVATE KEY-----
 ...
@@ -40,8 +42,8 @@ import (
 )
 
 func main() {
+	// Zero-config: BaseURL is optional, defaults to TAQLYN_BASE_URL env var or "https://api.taqlyn.com"
 	client, err := taqlyn.NewClient(taqlyn.Config{
-		BaseURL:       os.Getenv("TAQLYN_BASE_URL"),
 		ClientID:      os.Getenv("TAQLYN_CLIENT_ID"),
 		PrivateKeyPEM: os.Getenv("TAQLYN_PRIVATE_KEY"),
 	})
